@@ -4,6 +4,7 @@ import com.google.inject.Key;
 import com.google.inject.name.Names;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.application.MATSimApplication;
@@ -21,9 +22,12 @@ import org.matsim.run.scoring.AdvancedScoringConfigGroup;
 import org.matsim.run.scoring.AdvancedScoringModule;
 import org.matsim.simwrapper.SimWrapperConfigGroup;
 import org.matsim.simwrapper.SimWrapperModule;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.VehiclesFactory;
 import picocli.CommandLine;
 
-import java.util.List;
+import java.util.*;
 
 @CommandLine.Command(header = ":: Open Berlin Scenario ::", version = OpenBerlinScenario.VERSION, mixinStandardHelpOptions = true)
 public class OpenBerlinScenario extends MATSimApplication {
@@ -35,9 +39,10 @@ public class OpenBerlinScenario extends MATSimApplication {
 
 	@CommandLine.Mixin
 	private final SampleOptions sample = new SampleOptions(10, 25, 3, 1);
+//	/net/ils/matsim-class/brendan-lawton/HW2/input/v6.3/berlin-v6.3.config.xml
 
 	public OpenBerlinScenario() {
-		super(String.format("input/v%s/berlin-v%s.config.xml", VERSION, VERSION));
+		super(String.format("/net/ils/matsim-class/brendan-lawton/HW2/input/v6.3/berlin-v6.3.config.xml", VERSION, VERSION));
 	}
 
 	public static void main(String[] args) {
@@ -97,19 +102,47 @@ public class OpenBerlinScenario extends MATSimApplication {
 				.setSubpopulation("person")
 		);
 
+//		config.addModule(new BicycleConfigGroup());
+//
+//		BicycleConfigGroup bicycleConfigGroup = ConfigUtils.addOrGetModule( config, BicycleConfigGroup.class );
+//		bicycleConfigGroup.setBicycleMode( "bike" );
+//		bicycleConfigGroup.setMarginalUtilityOfInfrastructure_m(-0.0002);
+//		bicycleConfigGroup.setMarginalUtilityOfComfort_m(-0.0002);
+//		bicycleConfigGroup.setMarginalUtilityOfGradient_m_100m(-0.02);
+//
+//		String bikeMode = "bike";
+//
+//		ArrayList<String> subTourModesAL = new ArrayList<>(List.of(config.subtourModeChoice().getModes()));
+//		subTourModesAL.add("bike");
+//
+//		String[] subTourModes = subTourModesAL.toArray(new String[subTourModesAL.size()]);
+//		config.subtourModeChoice().setModes(subTourModes);
+//
+		config.routing().removeTeleportedModeParams("bike");
+
+//		Collection<String> mainModes = config.qsim().getMainModes();
+//
+//		mainModes.add(bikeMode);
+//
+//		config.routing().setNetworkModes(mainModes);
+//
+//		ScoringConfigGroup.ModeParams modeParam = new ScoringConfigGroup.ModeParams("bike").setMarginalUtilityOfTraveling(-.02);
+//		config.scoring().addModeParams(modeParam);
+
 		return config;
 	}
 
 	@Override
 	protected void prepareScenario(Scenario scenario) {
+		final VehiclesFactory vf = VehicleUtils.getFactory();
+		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create("bike", VehicleType.class ) ).setNetworkMode( "bike" ).setMaximumVelocity(4 ).setPcuEquivalents(0.25 ) );
+
 	}
 
 	@Override
 	protected void prepareControler(Controler controler) {
 
 		controler.addOverridingModule(new SimWrapperModule());
-
-		controler.addOverridingModule(new TravelTimeBinding());
 
 		if (ConfigUtils.hasModule(controler.getConfig(), AdvancedScoringConfigGroup.class)) {
 			controler.addOverridingModule(new AdvancedScoringModule());
