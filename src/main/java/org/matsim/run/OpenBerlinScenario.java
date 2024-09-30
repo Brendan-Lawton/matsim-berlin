@@ -9,9 +9,11 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.application.MATSimApplication;
 import org.matsim.application.options.SampleOptions;
+import org.matsim.contrib.bicycle.BicycleConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ReplanningConfigGroup;
+import org.matsim.core.config.groups.ScoringConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule;
@@ -40,9 +42,10 @@ public class OpenBerlinScenario extends MATSimApplication {
 	@CommandLine.Mixin
 	private final SampleOptions sample = new SampleOptions(10, 25, 3, 1);
 //	/net/ils/matsim-class/brendan-lawton/HW2/input/v6.3/berlin-v6.3.config.xml
+	// /net/ils/matsim-class/brendan-lawton/HW2/input/v6.3/berlin-v6.3.config.xml
 
 	public OpenBerlinScenario() {
-		super(String.format("/net/ils/matsim-class/brendan-lawton/HW2/input/v6.3/berlin-v6.3.config.xml", VERSION, VERSION));
+		super(String.format("/net/ils/matsim-class/brendan-lawton/HW2/base_case/input/v6.3/berlin-v6.3.config.xml", VERSION, VERSION));
 	}
 
 	public static void main(String[] args) {
@@ -102,32 +105,34 @@ public class OpenBerlinScenario extends MATSimApplication {
 				.setSubpopulation("person")
 		);
 
-//		config.addModule(new BicycleConfigGroup());
-//
-//		BicycleConfigGroup bicycleConfigGroup = ConfigUtils.addOrGetModule( config, BicycleConfigGroup.class );
-//		bicycleConfigGroup.setBicycleMode( "bike" );
-//		bicycleConfigGroup.setMarginalUtilityOfInfrastructure_m(-0.0002);
-//		bicycleConfigGroup.setMarginalUtilityOfComfort_m(-0.0002);
-//		bicycleConfigGroup.setMarginalUtilityOfGradient_m_100m(-0.02);
-//
-//		String bikeMode = "bike";
-//
-//		ArrayList<String> subTourModesAL = new ArrayList<>(List.of(config.subtourModeChoice().getModes()));
-//		subTourModesAL.add("bike");
-//
-//		String[] subTourModes = subTourModesAL.toArray(new String[subTourModesAL.size()]);
-//		config.subtourModeChoice().setModes(subTourModes);
-//
+		// create bike config group
+		config.addModule(new BicycleConfigGroup());
+		BicycleConfigGroup bicycleConfigGroup = ConfigUtils.addOrGetModule( config, BicycleConfigGroup.class );
+		bicycleConfigGroup.setBicycleMode( "bike" );
+		bicycleConfigGroup.setMarginalUtilityOfInfrastructure_m(-0.0002);
+		bicycleConfigGroup.setMarginalUtilityOfComfort_m(-0.0002);
+		bicycleConfigGroup.setMarginalUtilityOfGradient_m_100m(-0.02);
+
+		//add bike to subtour mode choice
+		String bikeMode = "bike";
+		ArrayList<String> subTourModesAL = new ArrayList<>(List.of(config.subtourModeChoice().getModes()));
+		subTourModesAL.add("bike");
+		String[] subTourModes = subTourModesAL.toArray(new String[subTourModesAL.size()]);
+		config.subtourModeChoice().setModes(subTourModes);
+
+		// add bike to QSim / network modes
+//		Collection<String> mainModes = config.qsim().getMainModes();
+//		mainModes.add(bikeMode);
+//		config.routing().setNetworkModes(mainModes);
+
+		// add bike to scoring
+		ScoringConfigGroup.ModeParams modeParam = new ScoringConfigGroup.ModeParams("bike").
+			setMarginalUtilityOfTraveling(-.02);
+		config.scoring().addModeParams(modeParam);
+
+
 		config.routing().removeTeleportedModeParams("bike");
 
-//		Collection<String> mainModes = config.qsim().getMainModes();
-//
-//		mainModes.add(bikeMode);
-//
-//		config.routing().setNetworkModes(mainModes);
-//
-//		ScoringConfigGroup.ModeParams modeParam = new ScoringConfigGroup.ModeParams("bike").setMarginalUtilityOfTraveling(-.02);
-//		config.scoring().addModeParams(modeParam);
 
 		return config;
 	}
@@ -135,8 +140,8 @@ public class OpenBerlinScenario extends MATSimApplication {
 	@Override
 	protected void prepareScenario(Scenario scenario) {
 		final VehiclesFactory vf = VehicleUtils.getFactory();
-		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create("bike", VehicleType.class ) ).setNetworkMode( "bike" ).setMaximumVelocity(4 ).setPcuEquivalents(0.25 ) );
-
+		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create("bike", VehicleType.class ) )
+			.setNetworkMode( "bike" ).setMaximumVelocity(4 ).setPcuEquivalents(0.25 ) );
 	}
 
 	@Override

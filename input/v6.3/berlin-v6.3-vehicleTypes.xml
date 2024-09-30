@@ -4,6 +4,24 @@
 
 	<!-- Mode types -->
 
+	<vehicleType id="bike">
+		<attributes>
+			<attribute name="accessTimeInSecondsPerPerson" class="java.lang.Double">1</attribute>
+			<attribute name="doorOperationMode" class="org.matsim.vehicles.VehicleType$DoorOperationMode">serial</attribute>
+			<attribute name="egressTimeInSecondsPerPerson" class="java.lang.Double">1</attribute>
+		</attributes>
+
+		<length meter="2"/>
+		<width meter="1.0"/>
+		<maximumVelocity meterPerSecond="4.0"/>
+		<costInformation>
+		</costInformation>
+		<passengerCarEquivalents pce="0.25"/>
+		<networkMode networkMode="bike"/>
+		<flowEfficiencyFactor factor="1.0"/>
+	</vehicleType>
+
+
 	<vehicleType id="car">
 		<attributes>
 			<attribute name="accessTimeInSecondsPerPerson" class="java.lang.Double">1</attribute>

@@ -28,16 +28,10 @@ class CarFilter {
 		modesCopy.add("ride");
 		Set<String> modesInsideRing = new HashSet<>();
 		modesInsideRing.add("freight");
-		Set<String> modes = new HashSet<>();
-		modes.add("freight");
-		modes.add("car");
-		modes.add("truck");
-		modes.add("ride");
 
 
 
 
-		Set<String> restrictedLinkIds = new HashSet<>();
 		final String filterShape = "/home/brendan/Downloads/berlin_ring.shp";
 
 		final Collection<Geometry> geometries = new ArrayList<>();
@@ -83,7 +77,6 @@ class CarFilter {
 						// Add the copied link to the network
 						network.addLink(linkCopy);
 
-						restrictedLinkIds.add(link.getId().toString());
 					}
 
 				}
